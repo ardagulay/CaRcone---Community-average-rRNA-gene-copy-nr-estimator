@@ -1,0 +1,130 @@
+## CaRcone - Community average rRNA gene copy nr estimator
+ 
+## Written by Dr. Arda Gülay (2016), DTU @ Technical University of Denmark.
+
+##R session info used in this code:
+
+##R version 3.1.1 (2014-07-10)
+##Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+##locale:
+##[1] LC_COLLATE=English_United Kingdom.1252  LC_CTYPE=English_United Kingdom.1252   
+##[3] LC_MONETARY=English_United Kingdom.1252 LC_NUMERIC=C                           
+##[5] LC_TIME=English_United Kingdom.1252    
+
+##attached base packages:
+##[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+##other attached packages:
+##[1] phyloseq_1.9.12  data.table_1.9.6 ggplot2_1.0.0    reshape2_1.4     vegan_2.0-10    
+##[6] lattice_0.20-29  permute_0.8-3   
+##-------------------------------------------------------------------------------------------
+
+#Load libraries
+   library(phyloseq)
+   library(reshape2)
+   library(data.table)
+
+#Set your working directory
+setwd("H:/Beta diversity/R-code/qPCR")  
+
+#Download the latest rRNA database having genus names and their mean 16SrRNA content
+#Import  your database and convert the format
+read.delim("rrnDB-4.4.3_pantaxa_stats_RDP.tsv")->table # Set the working database
+c("id","rank","name","mean")->store
+table[,store]->table
+table[which(table$rank=="genus"),]->table_genus
+table[which(table$rank=="family"),]->table_family
+table[which(table$rank=="order"),]->table_order
+table[which(table$rank=="class"),]->table_class
+table[which(table$rank=="phylum"),]->table_phylum
+table[which(table$rank=="domain"),]->table_domain
+
+#Import  your biom table; "Biom" file should contain taxa at the following levels: "Rank1:"Root",Rank2:"Kingdom","Rank3:"Phylum","Rank4:Class","Rank5:Order","Rank6:Genus"
+import_biom("sample_otutable.biom")->sample_biom  # Import biom file
+
+
+tax_glom(sample_biom, "Rank6")->sample_biom
+
+ #List variables
+ABSOLUTEtotal<- 0
+WEIGHTEDtotal<- 0
+NONmatched_genus<-c()
+rRNA_number_list<-list()
+GENUSname<-c()
+OTUname<-c()
+
+for (i in 1:length(colnames(otu_table(sample_biom))))
+{
+  otu_table(sample_biom)[,i:i]->SAMPLEselected
+  for (k in 1:length(row.names(SAMPLEselected)))
+   {
+    tax_table(sample_biom)[k:k, 6:6]->GENUSname
+    gsub("g__","",GENUSname[1:0])->GENUSname
+    row.names(GENUSname)->OTUname
+    table_genus[ which(table_genus$name==as.character(GENUSname)),]$mean -> TAXONmean   # Find mean value
+     if (length(TAXONmean)==1)
+     {
+       otu_table(SAMPLEselected)[OTUname,]->ABUNDANCEline
+       as.data.frame(ABUNDANCEline)->ABUNDANCEline
+       ABUNDANCEline[,1:1]->ABSOLUTE
+       ABUNDANCEline[,1:1]*TAXONmean->WEIGHTED
+       ABSOLUTEtotal<-ABSOLUTE+ABSOLUTEtotal
+       WEIGHTEDtotal<-WEIGHTED+WEIGHTEDtotal
+        } else {
+                   tax_table(sample_biom)[k:k, 5:5]->ORDERname
+                   gsub("o__","",ORDERname[1:0])->ORDERname
+                   table_order[ which(table_order$name==as.character(ORDERname)),]$mean -> TAXONmean   # Find mean value
+                  if (length(TAXONmean)==1)
+                  {
+                   otu_table(SAMPLEselected)[OTUname,]->ABUNDANCEline
+                   as.data.frame(ABUNDANCEline)->ABUNDANCEline
+                   ABUNDANCEline[,1:1]->ABSOLUTE
+                   ABUNDANCEline[,1:1]*TAXONmean->WEIGHTED
+                   ABSOLUTEtotal<-ABSOLUTE+ABSOLUTEtotal
+                   WEIGHTEDtotal<-WEIGHTED+WEIGHTEDtotal
+                   } else {
+                   tax_table(sample_biom)[k:k, 4:4]->CLASSname
+                   gsub("c__","",CLASSname[1:0])->CLASSname
+                   table_class[ which(table_class$name==as.character(CLASSname)),]$mean -> TAXONmean   # Find mean value
+                          if (length(TAXONmean)==1)
+                          {
+                          otu_table(SAMPLEselected)[OTUname,]->ABUNDANCEline
+                          as.data.frame(ABUNDANCEline)->ABUNDANCEline
+                          ABUNDANCEline[,1:1]->ABSOLUTE
+                          ABUNDANCEline[,1:1]*TAXONmean->WEIGHTED
+                          ABSOLUTEtotal<-ABSOLUTE+ABSOLUTEtotal
+                          WEIGHTEDtotal<-WEIGHTED+WEIGHTEDtotal
+                   } else {
+                          tax_table(sample_biom)[k:k, 3:3]->PHYLUMname
+                          gsub("p__","",PHYLUMname[1:0])->PHYLUMname
+                         table_phylum[ which(table_phylum$name==as.character(PHYLUMname)),]$mean -> TAXONmean   # Find mean value
+                                 if (length(TAXONmean)==1)
+                                 {
+                                 otu_table(SAMPLEselected)[OTUname,]->ABUNDANCEline
+                                 as.data.frame(ABUNDANCEline)->ABUNDANCEline
+                                 ABUNDANCEline[,1:1]->ABSOLUTE
+                                 ABUNDANCEline[,1:1]*TAXONmean->WEIGHTED
+                                 ABSOLUTEtotal<-ABSOLUTE+ABSOLUTEtotal
+                                 WEIGHTEDtotal<-WEIGHTED+WEIGHTEDtotal
+                                  } else {
+                                 tax_table(sample_biom)[k:k, 2:2]->KINGDOMname
+                                 gsub("k__","",KINGDOMname[1:0])->KINGDOMname
+                                 table_domain[ which(table_domain$name==as.character(KINGDOMname)),]$mean -> TAXONmean   # Find mean value
+                                         if (length(TAXONmean)==1)
+                                         {
+                                         otu_table(SAMPLEselected)[OTUname,]->ABUNDANCEline
+                                         as.data.frame(ABUNDANCEline)->ABUNDANCEline
+                                         ABUNDANCEline[,1:1]->ABSOLUTE
+                                         ABUNDANCEline[,1:1]*TAXONmean->WEIGHTED
+                                         ABSOLUTEtotal<-ABSOLUTE+ABSOLUTEtotal
+                                         WEIGHTEDtotal<-WEIGHTED+WEIGHTEDtotal
+                                          } else {next}
+
+} } } } }
+
+    WEIGHTEDtotal/ABSOLUTEtotal->SAMPLE_mean_rRNA
+    rRNA_number_list[[i]]<-rbind(sample_names(SAMPLEselected),SAMPLE_mean_rRNA)
+}
+
+ print (as.data.frame(unlist(rRNA_number_list)))
