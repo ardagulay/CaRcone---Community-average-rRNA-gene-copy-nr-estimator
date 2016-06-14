@@ -29,7 +29,8 @@
 setwd("H:/Beta diversity/R-code/qPCR")  
 
 #Download the latest rRNA database having genus names and their mean 16SrRNA content
-#Import  your database and convert the format
+#Use the following link to download the rRNA database : "https://rrndb.umms.med.umich.edu/static/download/rrnDB-4.4.3_pantaxa_stats_RDP.tsv.zip"
+#Unzip your database, import and convert the format
 read.delim("rrnDB-4.4.3_pantaxa_stats_RDP.tsv")->table # Set the working database
 c("id","rank","name","mean")->store
 table[,store]->table
