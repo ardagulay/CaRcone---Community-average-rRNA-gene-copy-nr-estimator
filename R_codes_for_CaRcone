@@ -41,7 +41,8 @@ table[which(table$rank=="class"),]->table_class
 table[which(table$rank=="phylum"),]->table_phylum
 table[which(table$rank=="domain"),]->table_domain
 
-#Import  your biom table; "Biom" file should contain taxa at the following levels: "Rank1:"Root",Rank2:"Kingdom","Rank3:"Phylum","Rank4:Class","Rank5:Order","Rank6:Genus"
+#Import  your biom table; "Biom" file should contain taxa at the following levels:
+# "Rank1:"Root",Rank2:"Kingdom","Rank3:"Phylum","Rank4:Class","Rank5:Order","Rank6:Genus"
 import_biom("sample_otutable.biom")->sample_biom  # Import biom file
 
 
