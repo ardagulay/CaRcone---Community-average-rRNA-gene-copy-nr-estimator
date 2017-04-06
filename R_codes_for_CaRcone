@@ -29,8 +29,7 @@
 setwd("H:/Beta diversity/R-code/qPCR")  
 
 #Download the latest rRNA database having genus names and their mean 16SrRNA content
-#Use the following link to download the rRNA database : "https://rrndb.umms.med.umich.edu/static/download/rrnDB-4.4.3_pantaxa_stats_RDP.tsv.zip"
-#Unzip your database, import and convert the format
+#Import  your database and convert the format
 read.delim("rrnDB-4.4.3_pantaxa_stats_RDP.tsv")->table # Set the working database
 c("id","rank","name","mean")->store
 table[,store]->table
@@ -41,8 +40,7 @@ table[which(table$rank=="class"),]->table_class
 table[which(table$rank=="phylum"),]->table_phylum
 table[which(table$rank=="domain"),]->table_domain
 
-#Import  your biom table; "Biom" file should contain taxa at the following levels:
-# "Rank1:"Root",Rank2:"Kingdom","Rank3:"Phylum","Rank4:Class","Rank5:Order","Rank6:Genus"
+#Import  your biom table; "Biom" file should contain taxa at the following levels: "Rank1:"Root",Rank2:"Kingdom","Rank3:"Phylum","Rank4:Class","Rank5:Order","Rank6:Genus"
 import_biom("sample_otutable.biom")->sample_biom  # Import biom file
 
 
@@ -126,6 +124,8 @@ for (i in 1:length(colnames(otu_table(sample_biom))))
 } } } } }
 
     WEIGHTEDtotal/ABSOLUTEtotal->SAMPLE_mean_rRNA
+    ABSOLUTEtotal<- 0
+    WEIGHTEDtotal<- 0
     rRNA_number_list[[i]]<-rbind(sample_names(SAMPLEselected),SAMPLE_mean_rRNA)
 }
 
